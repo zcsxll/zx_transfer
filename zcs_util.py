@@ -1,5 +1,30 @@
 import hashlib
 
+def receive_packet(sock):
+    data = sock.recv(8)
+    if len(data) < 8:
+        raise Exception('receive data from client failed, %d bytes got, %d bytes expected' % (len(data), 8))
+
+    if bytes.decode(data[0:2], encoding='utf-8') != 'ZX':
+        raise Exception('data[0:2] must be ZX')
+
+    packet_len = int.from_bytes(data[4:8], byteorder='big', signed=True)
+    # print(packet_len)
+    data = sock.recv(packet_len)
+    if len(data) < packet_len:
+        raise Exception('receive data from client failed, %d bytes got, %d bytes expected' % (len(data), packet_len))
+    return zcs_bytes2dict(data)
+
+def send_packet(sock, packet):
+    bytes_packet = zcs_dict2bytes(packet)
+    data = 'ZX'.encode(encoding='utf-8')
+    data += b'00'
+    data += len(bytes_packet).to_bytes(length=4, byteorder='big', signed=False)
+    data += bytes_packet
+    # print(data, len(data))
+    sock.send(data)
+    # time.sleep(1)
+
 def zcs_dict2bytes(d):
     ret = b''
     for key, val in d.items():

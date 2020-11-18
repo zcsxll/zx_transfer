@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 from tqdm import tqdm
+import subprocess
 
 sys.path.append(os.path.abspath('.'))
 import zcs_util as zu
@@ -24,6 +25,7 @@ class ZXServer:
                 try:
                     self.tackle(client_socket)
                 except Exception as e:
+                    client_socket.close()
                     print(e)
                     break
 
@@ -34,14 +36,15 @@ class ZXServer:
         packet = zu.receive_packet(client_socket)
         # print(packet)
         if packet['CMD'] == 1:
-            feedback = self.tackle_receive_file(packet)
+            response = self.tackle_receive_file(packet)
         elif packet['CMD'] == 100:
-            feedback = self.tackle_exec_cmd(packet)
+            response = self.tackle_exec_cmd(packet)
         else:
             raise Exception('unknown command {}'.format(packet['CMD']))
         try:
-            zu.send_packet(client_socket, feedback)
+            zu.send_packet(client_socket, response)
         except Exception as e:
+            # print(e)
             pass
 
     def tackle_receive_file(self, packet):
@@ -81,22 +84,23 @@ class ZXServer:
     def tackle_exec_cmd(self, packet):
         # print(packet)
         cmd = packet['EXE']
+        # print(packet)
         for arg in packet['ARGS']:
             cmd += (' ' + arg)
         print('EXEC [%s]' % cmd)
-        p = os.popen(cmd, 'r')
-        ret = p.read()
-        p.close()
+        # p = os.popen(cmd, 'r', )
+        # ret = p.read()
+        # p.close()
         # print(ret)
 
+        sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sp.wait(timeout=10.0)
+        response_stdout = sp.stdout.read().decode('utf-8')#[:256]
+        response_stderr = sp.stderr.read().decode('utf-8')#[:256]
+
+        # print(response_stdout, response_stderr)
         self.state['DONE'] = True
-        return {'FB':'OK', 'RET':ret}
+        return {'FB':'OK', 'stdout':response_stdout, 'stderr':response_stderr}
 
 if __name__ == '__main__':
     ZXServer().start()
-    # a = b'123i'
-    # print(a[-1:0])
-    # task = os.popen('ls -al', 'r')
-    # ret = task.read()
-    # print('"%s"' % ret)
-    # task.close()

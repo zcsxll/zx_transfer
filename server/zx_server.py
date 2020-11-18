@@ -14,6 +14,7 @@ class ZXServer:
         self.server_socket.listen(1)
 
     def start(self):
+        print('ZXServer started')
         while True:
             client_socket, client_addr = self.server_socket.accept()
             # print('received client:', client_addr)

@@ -5,7 +5,7 @@ import zcs_codec
 def receive_packet(sock):
     data = sock.recv(8)
     if len(data) < 8:
-        raise Exception('receive data from client failed, %d bytes got, %d bytes expected' % (len(data), 8))
+        raise Exception('receive data failed, %d bytes got, %d bytes expected' % (len(data), 8))
 
     if bytes.decode(data[0:2], encoding='utf-8') != 'ZX':
         raise Exception('data[0:2] must be ZX')
@@ -14,7 +14,7 @@ def receive_packet(sock):
     # print(packet_len)
     data = sock.recv(packet_len)
     if len(data) < packet_len:
-        raise Exception('receive data from client failed, %d bytes got, %d bytes expected' % (len(data), packet_len))
+        raise Exception('receive data failed, %d bytes got, %d bytes expected' % (len(data), packet_len))
     return zcs_codec.ZcsDecoder()(data)
 
 def send_packet(sock, packet):

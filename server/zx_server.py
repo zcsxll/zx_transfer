@@ -22,23 +22,29 @@ class ZXServer:
             self.pbar = None #tqdm(100)
             while not self.state['DONE']:
                 try:
-                    self.handle_command(client_socket)
+                    self.tackle(client_socket)
                 except Exception as e:
                     print(e)
                     break
+
             if self.pbar is not None:
                 self.pbar.close()
 
-    def handle_command(self, client_socket):
+    def tackle(self, client_socket):
         packet = zu.receive_packet(client_socket)
         # print(packet)
         if packet['CMD'] == 1:
-            feedback = self.handle_command_receive_file(packet)
+            feedback = self.tackle_receive_file(packet)
+        elif packet['CMD'] == 100:
+            feedback = self.tackle_exec_cmd(packet)
         else:
             raise Exception('unknown command {}'.format(packet['CMD']))
-        zu.send_packet(client_socket, feedback)
+        try:
+            zu.send_packet(client_socket, feedback)
+        except Exception as e:
+            pass
 
-    def handle_command_receive_file(self, packet):
+    def tackle_receive_file(self, packet):
         if abs(packet['ID']) == 1:
             if self.last_packet is not None:
                 raise Exception('packet id is 0, but last packet is not None')
@@ -72,7 +78,25 @@ class ZXServer:
         self.last_packet = packet
         return {'FB':'OK'}
 
+    def tackle_exec_cmd(self, packet):
+        # print(packet)
+        cmd = packet['EXE']
+        for arg in packet['ARGS']:
+            cmd += (' ' + arg)
+        print('EXEC [%s]' % cmd)
+        p = os.popen(cmd, 'r')
+        ret = p.read()
+        p.close()
+        # print(ret)
+
+        self.state['DONE'] = True
+        return {'FB':'OK', 'RET':ret}
+
 if __name__ == '__main__':
     ZXServer().start()
     # a = b'123i'
     # print(a[-1:0])
+    # task = os.popen('ls -al', 'r')
+    # ret = task.read()
+    # print('"%s"' % ret)
+    # task.close()

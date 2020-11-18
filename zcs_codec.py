@@ -1,5 +1,7 @@
 class ZcsEncoder:
     def __call__(self, obj):
+        if obj is None:
+            return b''
         return self.obj2bytes(obj)
 
     def obj2bytes(self, obj):

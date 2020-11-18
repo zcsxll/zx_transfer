@@ -14,10 +14,12 @@ class ZcsEncoder:
             ret += self.bytes2bytes(obj)
         elif isinstance(obj, tuple):
             ret += self.tuple2bytes(obj)
+        elif isinstance(obj, list):
+            ret += self.list2bytes(obj)
         elif isinstance(obj, dict):
             ret += self.dict2bytes(obj)
         else:
-            raise Exception('unknown value type %s' % (type(val)))
+            raise Exception('unknown value type %s' % (type(obj)))
         return ret
 
     def str2bytes(self, s):
@@ -38,19 +40,26 @@ class ZcsEncoder:
         ret += b
         return ret
 
+    def tuple2bytes(self, t):
+        ret = b't'
+        ret += len(t).to_bytes(length=4, byteorder='big', signed=True)
+        for item in t:
+            ret += self.obj2bytes(item)
+        return ret
+
+    def list2bytes(self, l):
+        ret = b'l'
+        ret += len(l).to_bytes(length=4, byteorder='big', signed=True)
+        for item in l:
+            ret += self.obj2bytes(item)
+        return ret
+
     def dict2bytes(self, d):
         ret = b'd'
         ret += len(d).to_bytes(length=4, byteorder='big', signed=True)
         for key, val in d.items():
             ret += self.obj2bytes(key)
             ret += self.obj2bytes(val)
-        return ret
-
-    def tuple2bytes(self, t):
-        ret = b't'
-        ret += len(t).to_bytes(length=4, byteorder='big', signed=True)
-        for item in t:
-            ret += self.obj2bytes(item)
         return ret
 
 class ZcsDecoder:
@@ -69,6 +78,8 @@ class ZcsDecoder:
             return self.bytes2bytes()
         if val_type == b't':
             return self.bytes2tuple()
+        if val_type == b'l':
+            return self.bytes2list()
         if val_type == b'd':
             return self.bytes2dict()
         raise Exception('unknown value type {}'.format(val_type))
@@ -90,6 +101,26 @@ class ZcsDecoder:
         self.b = self.b[4+bytes_len:]
         return b
 
+    def bytes2tuple(self):
+        ret = []
+        tuple_len = int.from_bytes(self.b[0:4], byteorder='big', signed=True)
+        self.b = self.b[4:]
+        for i in range(tuple_len):
+            val = self.bytes2obj()
+            # print(key, val)
+            ret.append(val)
+        return tuple(ret)
+
+    def bytes2list(self):
+        ret = []
+        list_len = int.from_bytes(self.b[0:4], byteorder='big', signed=True)
+        self.b = self.b[4:]
+        for i in range(list_len):
+            val = self.bytes2obj()
+            # print(key, val)
+            ret.append(val)
+        return ret
+
     def bytes2dict(self):
         ret = {}
         dict_len = int.from_bytes(self.b[0:4], byteorder='big', signed=True)
@@ -100,16 +131,6 @@ class ZcsDecoder:
             # print(key, val)
             ret[key] = val
         return ret
-
-    def bytes2tuple(self):
-        ret = []
-        tuple_len = int.from_bytes(self.b[0:4], byteorder='big', signed=True)
-        self.b = self.b[4:]
-        for i in range(tuple_len):
-            val = self.bytes2obj()
-            # print(key, val)
-            ret.append(val)
-        return tuple(ret)
 
 if __name__ == '__main__':
     a = {'ss':123, 'dd':'dddd', 'kkk':b'gghhjj', 123:((1, 2, 3), 'ff', {222:('2',)})}

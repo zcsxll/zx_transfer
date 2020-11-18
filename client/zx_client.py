@@ -1,10 +1,9 @@
 import os
 import sys
 import socket
-import time
-import tqdm
 
-sys.path.append(os.path.abspath('.'))
+path, basename = os.path.split(sys.argv[0])
+sys.path.append(os.path.join(path, '..'))
 import zcs_util as zu
 
 class ZXClient:
@@ -40,8 +39,9 @@ class ZXClient:
                 packet['DATA'] = data
 
                 zu.send_packet(self.sock, packet)
-                fb_packet = zu.receive_packet(self.sock)
-                if fb_packet['FB'] != 'OK':
+                response = zu.receive_packet(self.sock)
+                if response['FB'] != 'OK':
+                    print('send file failed')
                     break
                 # time.sleep(0.001)
                 # if id > 2:
@@ -55,14 +55,24 @@ class ZXClient:
             'ARGS':args,
         }
         zu.send_packet(self.sock, packet)
+        response = zu.receive_packet(self.sock)
+        print(response)
 
 if __name__ == '__main__':
-    zxc = ZXClient()
-    time.sleep(2)
-    zxc.connect('127.0.0.1', 9999)
-    # zxc.send_file('/Users/cszhao/Music/ラムジ-PLANET.flac')
-    # zxc.send_file('/Users/cszhao/study/MLY-zh-cn.pdf')
-    # zxc.send_file('/Users/cszhao/study/SNR.png')
-    # zxc.send_file('/Users/cszhao/project/python/zx_transfer/zcs_util.py')
-    # print(zu.md5sum('/Users/cszhao/Music/ラムジ-PLANET.flac'))
-    zxc.send_cmd('adb', 'push', 'ラムジ-PLANET.flac', '/sdcard/sogou')
+    if len(sys.argv) < 3:
+        print('usage: %s cmd args' % (sys.argv[0]))
+        print('\tvalid cmd: send_file send_cmd')
+        sys.exit()
+    cmd = sys.argv[1]
+    try:
+        zxc = ZXClient()
+        zxc.connect('10.129.27.102', 9999)
+        if cmd == 'send_file':
+            zxc.send_file(sys.argv[2])
+        elif cmd == 'send_cmd':
+            args = sys.argv[2:]
+            zxc.send_cmd(args[0], *args[1:])
+        else:
+            raise Exception('unknown cmd [%s]' % cmd)
+    except Exception as e:
+        print(e)

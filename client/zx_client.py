@@ -4,7 +4,7 @@ import socket
 import time
 import tqdm
 
-sys.path.append(os.path.join(os.path.abspath('.'), '..'))
+sys.path.append(os.path.abspath('.'))
 import zcs_util as zu
 
 class ZXClient:
@@ -47,12 +47,22 @@ class ZXClient:
                 # if id > 2:
                 #     break
 
+    def send_cmd(self, cmd, *args):
+        # print(cmd, args)
+        packet = {
+            'CMD':100,
+            'EXE':cmd,
+            'ARGS':args,
+        }
+        zu.send_packet(self.sock, packet)
+
 if __name__ == '__main__':
     zxc = ZXClient()
     time.sleep(2)
     zxc.connect('127.0.0.1', 9999)
-    zxc.send_file('/Users/cszhao/Music/ラムジ-PLANET.flac')
-    # zxc.send_file('/Users/cszhao/study/MLY-zh-cn.pdf')
+    # zxc.send_file('/Users/cszhao/Music/ラムジ-PLANET.flac')
+    zxc.send_file('/Users/cszhao/study/MLY-zh-cn.pdf')
     # zxc.send_file('/Users/cszhao/study/SNR.png')
     # zxc.send_file('/Users/cszhao/project/python/zx_transfer/zcs_util.py')
     # print(zu.md5sum('/Users/cszhao/Music/ラムジ-PLANET.flac'))
+    # zxc.send_cmd('adb', 'push', 'ラムジ-PLANET.flac', '/sdcard/sogou')

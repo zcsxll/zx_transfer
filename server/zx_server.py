@@ -3,23 +3,14 @@ import sys
 import socket
 from tqdm import tqdm
 
-sys.path.append(os.path.join(os.path.abspath('.'), '..'))
+sys.path.append(os.path.abspath('.'))
 import zcs_util as zu
-
-'''
-协议：
-data[0:2] ZX
-data[2:4] not used
-data[4:8] 长度，是bytes，调用zcs_bytes2dict转dict
-'''
 
 class ZXServer:
     def __init__(self, port=9999):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('', port))
         self.server_socket.listen(1)
-
-        self.state = 'IDLE'
 
     def start(self):
         while True:
@@ -35,7 +26,8 @@ class ZXServer:
                 except Exception as e:
                     print(e)
                     break
-            self.pbar.close()
+            if self.pbar is not None:
+                self.pbar.close()
 
     def handle_command(self, client_socket):
         packet = zu.receive_packet(client_socket)

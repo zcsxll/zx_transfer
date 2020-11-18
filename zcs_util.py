@@ -2,8 +2,15 @@ import hashlib
 
 import zcs_codec
 
+def receive_data(sock, length):
+    data = b''
+    while len(data) < length:
+        data += sock.recv(length - len(data))
+    return data
+
 def receive_packet(sock):
-    data = sock.recv(8)
+    # data = sock.recv(8)
+    data = receive_data(sock, 8)
     if len(data) < 8:
         raise Exception('receive data failed, %d bytes got, %d bytes expected' % (len(data), 8))
 
@@ -12,7 +19,8 @@ def receive_packet(sock):
 
     packet_len = int.from_bytes(data[4:8], byteorder='big', signed=True)
     # print(packet_len)
-    data = sock.recv(packet_len)
+    # data = sock.recv(packet_len)
+    data = receive_data(sock, packet_len)
     if len(data) < packet_len:
         raise Exception('receive data failed, %d bytes got, %d bytes expected' % (len(data), packet_len))
     return zcs_codec.ZcsDecoder()(data)

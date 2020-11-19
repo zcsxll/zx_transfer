@@ -5,7 +5,10 @@ import zcs_codec
 def receive_data(sock, length):
     data = b''
     while len(data) < length:
-        data += sock.recv(length - len(data))
+        tmp = sock.recv(length - len(data))
+        if len(tmp) == 0:
+            break
+        data += tmp
     return data
 
 def receive_packet(sock):

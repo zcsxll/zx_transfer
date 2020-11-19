@@ -62,21 +62,25 @@ class ZXClient:
         response = zu.receive_packet(self.sock)
         print(response)
 
+    def close(self):
+        self.sock.close()
+
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print('usage: %s cmd args' % (sys.argv[0]))
-        print('\tvalid cmd: send_file send_cmd')
+        print('\tvalid cmd: sf(send file) sc(send cmd)')
         sys.exit()
     cmd = sys.argv[1]
     try:
         zxc = ZXClient()
         zxc.connect('10.129.27.102', 9999)
-        if cmd == 'send_file':
+        if cmd == 'sf': #send file
             zxc.send_file(sys.argv[2])
-        elif cmd == 'send_cmd':
+        elif cmd == 'sc': #send cmd
             args = sys.argv[2:]
             zxc.send_cmd(args[0], *args[1:])
         else:
             raise Exception('unknown cmd [%s]' % cmd)
     except Exception as e:
         print(e)
+    zxc.close()

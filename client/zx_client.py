@@ -1,6 +1,7 @@
 import os
 import sys
 import socket
+from tqdm import tqdm
 
 path, basename = os.path.split(sys.argv[0])
 sys.path.append(os.path.join(path, '..'))
@@ -20,6 +21,7 @@ class ZXClient:
             'FSIZE':os.path.getsize(file_path),
             'MD5':zu.md5sum(file_path),
         }
+        pbar = tqdm(total=os.path.getsize(file_path), bar_format='{l_bar}{bar}', dynamic_ncols=True)
         with open(file_path, 'rb') as fp:
             id = 1
             offset = 0
@@ -27,11 +29,12 @@ class ZXClient:
                 data = fp.read(10240)
                 if len(data) <= 0:
                     break
+                pbar.update(len(data))
                 # print(type(data), len(data))
                 if len(data) < 10240:
                     id = -id
                 packet['ID'] = id
-                print(id)
+                # print(id)
                 id += 1
                 packet['SIZE'] = len(data)
                 packet['OFFSET'] = offset
@@ -46,6 +49,7 @@ class ZXClient:
                 # time.sleep(0.001)
                 # if id > 2:
                 #     break
+        pbar.close()
 
     def send_cmd(self, cmd, *args):
         # print(cmd, args)

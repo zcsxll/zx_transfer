@@ -6,6 +6,7 @@ from tqdm import tqdm
 path, basename = os.path.split(sys.argv[0])
 sys.path.append(os.path.join(path, '..'))
 import zcs_util as zu
+import zcs_conf as zc
 
 class ZXClient:
     def __init__(self):
@@ -68,17 +69,28 @@ class ZXClient:
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print('usage: %s cmd args' % (sys.argv[0]))
-        print('\tvalid cmd: sf(send file) sc(send cmd)')
+        print('\tvalid cmd: sf(send file) sc(send cmd) si(set server ip)')
         sys.exit()
+    conf = zc.ZcsConf()
     cmd = sys.argv[1]
     try:
         zxc = ZXClient()
-        zxc.connect('10.129.27.102', 9999)
         if cmd == 'sf': #send file
+            if 'server ip' not in conf.keys():
+                print('server ip is not set, pls exec "%s" si SERVER_IP' % sys.argv[0])
+                sys.exit()
+            zxc.connect(conf['server ip'], 9999)
             zxc.send_file(sys.argv[2])
         elif cmd == 'sc': #send cmd
+            if 'server ip' not in conf.keys():
+                print('server ip is not set, pls exec "%s" si SERVER_IP' % sys.argv[0])
+                sys.exit()
+            zxc.connect(conf['server ip'], 9999)
             args = sys.argv[2:]
             zxc.send_cmd(args[0], *args[1:])
+        elif cmd == 'si': #set server ip
+            conf['server ip'] = sys.argv[2]
+            conf.save()
         else:
             raise Exception('unknown cmd [%s]' % cmd)
     except Exception as e:

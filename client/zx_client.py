@@ -3,8 +3,8 @@ import sys
 import socket
 from tqdm import tqdm
 
-path, basename = os.path.split(sys.argv[0])
-sys.path.append(os.path.join(path, '..'))
+g_path, basename = os.path.split(sys.argv[0])
+sys.path.append(os.path.join(g_path, '..'))
 import zcs_util as zu
 import zcs_conf as zc
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         print('usage: %s cmd args' % (sys.argv[0]))
         print('\tvalid cmd: sf(send file) sc(send cmd) si(set server ip)')
         sys.exit()
-    conf = zc.ZcsConf()
+    conf = zc.ZcsConf(g_path)
     cmd = sys.argv[1]
     try:
         zxc = ZXClient()

@@ -1,8 +1,9 @@
+import os
 import json
 
 class ZcsConf:
-    def __init__(self):
-        with open('./client.conf', 'r') as fp:
+    def __init__(self, path):
+        with open(os.path.join(path, './client.conf'), 'r') as fp:
             json_str = fp.read()
             if len(json_str) < 2:
                 json_str = '{}'

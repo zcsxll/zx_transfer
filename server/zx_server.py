@@ -13,8 +13,13 @@ class ZXServer:
         self.server_socket.bind(('', port))
         self.server_socket.listen(1)
 
+    def local_ip(self):
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        return ip
+
     def start(self):
-        print('ZXServer started')
+        print('ZXServer[{}] started'.format(self.local_ip()))
         while True:
             client_socket, client_addr = self.server_socket.accept()
             # print('received client:', client_addr)

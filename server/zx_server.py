@@ -80,7 +80,7 @@ class ZXServer:
         if packet['ID'] < 0:
             # print('DONE')
             self.state['FP'].close()
-            md5 = zu.md5sum('./data_cache/%s' % packet['FNAME'])
+            md5 = zu.md5sum('/Users/cszhao/Downloads/%s' % packet['FNAME'])
             if packet['MD5'] != md5:
                 raise Exception('receive failed, md5s are not equal, {} vs. {}'.format(packet['MD5'], md5))
             self.state['DONE'] = True

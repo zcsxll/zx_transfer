@@ -57,7 +57,7 @@ class ZXServer:
         if abs(packet['ID']) == 1:
             if self.last_packet is not None:
                 raise Exception('packet id is 0, but last packet is not None')
-            self.state['FP'] = open('./data_cache/%s' % packet['FNAME'], 'wb')
+            self.state['FP'] = open('/Users/cszhao/Downloads/%s' % packet['FNAME'], 'wb')
             self.state['FP'].write(packet['DATA'])
             # print('receiving %s(%s): %2d%% ' % (packet['FNAME'], packet['MD5'], 0), end='')
             self.pbar = tqdm(total=packet['FSIZE'], bar_format='{l_bar}{bar}', dynamic_ncols=True)

@@ -4,7 +4,8 @@ import socket
 from tqdm import tqdm
 import subprocess
 
-sys.path.append(os.path.abspath('.'))
+#sys.path.append(os.path.abspath('.'))
+sys.path.append('/Users/cszhao/project/python/zx_transfer')
 import zcs_util as zu
 
 class ZXServer:
@@ -14,9 +15,28 @@ class ZXServer:
         self.server_socket.listen(1)
 
     def local_ip(self):
-        hostname = socket.gethostname()
-        ip = socket.gethostbyname(hostname)
-        return ip
+        try:
+            hostname = socket.gethostname()
+            ip = socket.gethostbyname(hostname)
+            return ip
+        except Exception as e:
+            print(e)
+        
+        try:
+            ip = None
+            ret = os.popen('ifconfig')
+            for line in ret:
+                words = line.split(' ')
+                words = [w.replace('\t', '') for w in words]
+                words = [w.replace('\n', '') for w in words]
+                for i, w in enumerate(words):
+                    if w == 'inet':
+                        print(w, words[i+1])
+                        ip = words[i+1] if ip is None or ip == '127.0.0.1' else ip
+            return ip
+        except Exception as e:
+            print(e)
+        return '?.?.?.?'
 
     def start(self):
         print('ZXServer[{}] started'.format(self.local_ip()))

@@ -3,7 +3,8 @@ import json
 
 class ZcsConf:
     def __init__(self, path):
-        with open(os.path.join(path, './client.conf'), 'r') as fp:
+        self.path = path
+        with open(os.path.join(self.path, 'client.conf'), 'r') as fp:
             json_str = fp.read()
             if len(json_str) < 2:
                 json_str = '{}'
@@ -21,7 +22,7 @@ class ZcsConf:
         return self.conf.keys()
 
     def save(self):
-        with open('./client.conf', 'w') as fp:
+        with open(os.path.join(self.path, 'client.conf'), 'w') as fp:
             fp.write(json.dumps(self.conf))
 
 if __name__ == '__main__':
